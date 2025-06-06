@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">report.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">report.html</h1>
+    <p>Report generated on 06-Jun-2025 at 09:54:46 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.1.1</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</th>
+        </tr>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left"><</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">></div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">51 tests took 00:01:38.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" disabled/>
+            <span class="failed">0 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" />
+            <span class="passed">51 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled/>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled/>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled/>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" disabled/>
+            <span class="error">0 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled/>
+            <span class="rerun">0 Reruns</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  </body>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.10.1&#34;, &#34;Platform&#34;: &#34;Windows-10-10.0.19045-SP0&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;8.4.0&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;cov&#34;: &#34;6.1.1&#34;, &#34;html&#34;: &#34;4.1.1&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;}}, &#34;tests&#34;: {&#34;tests/pytest_audio_processor.py::test_load_audio_cut&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_audio_processor.py::test_load_audio_cut&#34;, &#34;duration&#34;: &#34;423 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_audio_processor.py::test_load_audio_cut&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;423 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_audio_processor.py::test_load_audio_loop&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_audio_processor.py::test_load_audio_loop&#34;, &#34;duration&#34;: &#34;418 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_audio_processor.py::test_load_audio_loop&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;418 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_audio_processor.py::test_fade_in_out_applied&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_audio_processor.py::test_fade_in_out_applied&#34;, &#34;duration&#34;: &#34;342 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_audio_processor.py::test_fade_in_out_applied&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;342 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_audio_processor.py::test_audio_file_not_found&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_audio_processor.py::test_audio_file_not_found&#34;, &#34;duration&#34;: &#34;81 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_audio_processor.py::test_audio_file_not_found&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;81 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log call -------------------------------\nERROR    audio_processor:audio_processor.py:34 \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u0430\u0443\u0434\u0438\u043e\u0444\u0430\u0439\u043b\u0430: MoviePy error: the file nonexistent.wav could not be found!\nPlease check that you entered the correct path.\nTraceback (most recent call last):\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\audio_processor.py&amp;quot;, line 10, in load_audio_clip\n    clip = AudioFileClip(path)\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\audio\\io\\AudioFileClip.py&amp;quot;, line 70, in __init__\n    self.reader = FFMPEG_AudioReader(filename, fps=fps, nbytes=nbytes,\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\audio\\io\\readers.py&amp;quot;, line 51, in __init__\n    infos = ffmpeg_parse_infos(filename)\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\video\\io\\ffmpeg_reader.py&amp;quot;, line 270, in ffmpeg_parse_infos\n    raise IOError((&amp;quot;MoviePy error: the file %s could not be found!\\n&amp;quot;\nOSError: MoviePy error: the file nonexistent.wav could not be found!\nPlease check that you entered the correct path.\n\n&#34;}], &#34;tests/pytest_audio_processor.py::test_audio_invalid_mode&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_audio_processor.py::test_audio_invalid_mode&#34;, &#34;duration&#34;: &#34;7 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_audio_processor.py::test_audio_invalid_mode&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;7 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log call -------------------------------\nWARNING  audio_processor:audio_processor.py:29 \u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0438 \u0430\u0443\u0434\u0438\u043e: invalid\n\n&#34;}], &#34;tests/pytest_cli.py::test_parse_args_valid[arg_list0-expected0]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_cli.py::test_parse_args_valid[arg_list0-expected0]&#34;, &#34;duration&#34;: &#34;6 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_cli.py::test_parse_args_valid[arg_list0-expected0]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;6 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_cli.py::test_parse_args_valid[arg_list1-expected1]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_cli.py::test_parse_args_valid[arg_list1-expected1]&#34;, &#34;duration&#34;: &#34;5 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_cli.py::test_parse_args_valid[arg_list1-expected1]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;5 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_cli.py::test_autocover_flag&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_cli.py::test_autocover_flag&#34;, &#34;duration&#34;: &#34;5 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_cli.py::test_autocover_flag&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;5 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_cli.py::test_invalid_transition&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_cli.py::test_invalid_transition&#34;, &#34;duration&#34;: &#34;6 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_cli.py::test_invalid_transition&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;6 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\nusage: prog [-h] --images IMAGES [--audio AUDIO] [--duration DURATION]\n            [--fps FPS] [--bgcolor BGCOLOR] [--output OUTPUT]\n            [--bitrate BITRATE] [--crf CRF]\n            [--transition {none,fade,slide,push}]\n            [--transition-duration TRANSITION_DURATION]\n            [--mode {basic,images_loop}] [--zoom ZOOM] [--zoom-out ZOOM_OUT]\n            [--text TEXT] [--text-position {top,center,bottom}]\n            [--font-size FONT_SIZE] [--font-color FONT_COLOR]\n            [--font-path FONT_PATH] [--logo-path LOGO_PATH]\n            [--logo-scale LOGO_SCALE] [--logo-coords LOGO_COORDS]\n            [--autocover [AUTOCOVER]]\nprog: error: argument --transition: invalid choice: &amp;#x27;flip&amp;#x27; (choose from &amp;#x27;none&amp;#x27;, &amp;#x27;fade&amp;#x27;, &amp;#x27;slide&amp;#x27;, &amp;#x27;push&amp;#x27;)\n&#34;}], &#34;tests/pytest_cli.py::test_invalid_mode&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_cli.py::test_invalid_mode&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_cli.py::test_invalid_mode&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\nusage: prog [-h] --images IMAGES [--audio AUDIO] [--duration DURATION]\n            [--fps FPS] [--bgcolor BGCOLOR] [--output OUTPUT]\n            [--bitrate BITRATE] [--crf CRF]\n            [--transition {none,fade,slide,push}]\n            [--transition-duration TRANSITION_DURATION]\n            [--mode {basic,images_loop}] [--zoom ZOOM] [--zoom-out ZOOM_OUT]\n            [--text TEXT] [--text-position {top,center,bottom}]\n            [--font-size FONT_SIZE] [--font-color FONT_COLOR]\n            [--font-path FONT_PATH] [--logo-path LOGO_PATH]\n            [--logo-scale LOGO_SCALE] [--logo-coords LOGO_COORDS]\n            [--autocover [AUTOCOVER]]\nprog: error: argument --mode: invalid choice: &amp;#x27;wrongmode&amp;#x27; (choose from &amp;#x27;basic&amp;#x27;, &amp;#x27;images_loop&amp;#x27;)\n&#34;}], &#34;tests/pytest_image_processor.py::test_load_valid_images_only&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_load_valid_images_only&#34;, &#34;duration&#34;: &#34;343 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_load_valid_images_only&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;343 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/5 [00:00&amp;lt;?, ?it/s]\r 20%|\u2588\u2588        | 1/5 [00:00&amp;lt;00:00,  7.66it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 19.45it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 17.75it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:99 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 broken.png: cannot identify image file &amp;#x27;C:\\\\Users\\\\73B5~1\\\\AppData\\\\Local\\\\Temp\\\\tmpdbedbmpu\\\\broken.png&amp;#x27;\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_skip_overlay_behavior&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_skip_overlay_behavior&#34;, &#34;duration&#34;: &#34;225 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_skip_overlay_behavior&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;225 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/5 [00:00&amp;lt;?, ?it/s]\r 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 4/5 [00:00&amp;lt;00:00, 39.27it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 33.11it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:99 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 broken.png: cannot identify image file &amp;#x27;C:\\\\Users\\\\73B5~1\\\\AppData\\\\Local\\\\Temp\\\\tmpw_57kytq\\\\broken.png&amp;#x27;\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_invalid_color_handling&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_invalid_color_handling&#34;, &#34;duration&#34;: &#34;219 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_invalid_color_handling&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;219 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/5 [00:00&amp;lt;?, ?it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 41.54it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 41.54it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:25 \u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u0446\u0432\u0435\u0442 &amp;#x27;\u043d\u0435\u0446\u0432\u0435\u0442&amp;#x27;, \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e \u2014 &amp;#x27;black&amp;#x27;\nWARNING  image_processor:image_processor.py:99 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 broken.png: cannot identify image file &amp;#x27;C:\\\\Users\\\\73B5~1\\\\AppData\\\\Local\\\\Temp\\\\tmp3b49_ly8\\\\broken.png&amp;#x27;\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_invalid_logo_path&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_invalid_logo_path&#34;, &#34;duration&#34;: &#34;241 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_invalid_logo_path&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;241 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/5 [00:00&amp;lt;?, ?it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 36.41it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 36.15it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:99 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 broken.png: cannot identify image file &amp;#x27;C:\\\\Users\\\\73B5~1\\\\AppData\\\\Local\\\\Temp\\\\tmpvoyg39e9\\\\broken.png&amp;#x27;\nWARNING  image_processor:image_processor.py:94 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043b\u043e\u0433\u043e\u0442\u0438\u043f &amp;#x27;missing_logo.png&amp;#x27;: [Errno 2] No such file or directory: &amp;#x27;missing_logo.png&amp;#x27;\nWARNING  image_processor:image_processor.py:94 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043b\u043e\u0433\u043e\u0442\u0438\u043f &amp;#x27;missing_logo.png&amp;#x27;: [Errno 2] No such file or directory: &amp;#x27;missing_logo.png&amp;#x27;\nWARNING  image_processor:image_processor.py:94 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043b\u043e\u0433\u043e\u0442\u0438\u043f &amp;#x27;missing_logo.png&amp;#x27;: [Errno 2] No such file or directory: &amp;#x27;missing_logo.png&amp;#x27;\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_invalid_logo_coords&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_invalid_logo_coords&#34;, &#34;duration&#34;: &#34;157 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_invalid_logo_coords&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;157 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/2 [00:00&amp;lt;?, ?it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 2/2 [00:00&amp;lt;00:00, 24.36it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:89 \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0435\u043e\u0431\u0440\u0430\u0437\u043e\u0432\u0430\u043d\u0438\u044f \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442 \u043b\u043e\u0433\u043e\u0442\u0438\u043f\u0430: invalid,coords\nWARNING  image_processor:image_processor.py:89 \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0435\u043e\u0431\u0440\u0430\u0437\u043e\u0432\u0430\u043d\u0438\u044f \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442 \u043b\u043e\u0433\u043e\u0442\u0438\u043f\u0430: invalid,coords\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_invalid_font_and_text&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_invalid_font_and_text&#34;, &#34;duration&#34;: &#34;184 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_invalid_font_and_text&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;184 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/5 [00:00&amp;lt;?, ?it/s]\r 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 4/5 [00:00&amp;lt;00:00, 39.53it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 31.44it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:99 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 broken.png: cannot identify image file &amp;#x27;C:\\\\Users\\\\73B5~1\\\\AppData\\\\Local\\\\Temp\\\\tmpoz1qg7_c\\\\broken.png&amp;#x27;\nWARNING  image_processor:image_processor.py:46 \u0428\u0440\u0438\u0444\u0442 \u043f\u043e \u043f\u0443\u0442\u0438 &amp;#x27;missing_font.ttf&amp;#x27; \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0448\u0440\u0438\u0444\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e. \u041e\u0448\u0438\u0431\u043a\u0430: cannot open resource\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u0422\u0435\u043a\u0441\u0442&amp;#x27;: &amp;#x27;latin-1&amp;#x27; codec can&amp;#x27;t encode characters in position 0-4: ordinal not in range(256)\nWARNING  image_processor:image_processor.py:46 \u0428\u0440\u0438\u0444\u0442 \u043f\u043e \u043f\u0443\u0442\u0438 &amp;#x27;missing_font.ttf&amp;#x27; \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0448\u0440\u0438\u0444\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e. \u041e\u0448\u0438\u0431\u043a\u0430: cannot open resource\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u0422\u0435\u043a\u0441\u0442&amp;#x27;: &amp;#x27;latin-1&amp;#x27; codec can&amp;#x27;t encode characters in position 0-4: ordinal not in range(256)\nWARNING  image_processor:image_processor.py:46 \u0428\u0440\u0438\u0444\u0442 \u043f\u043e \u043f\u0443\u0442\u0438 &amp;#x27;missing_font.ttf&amp;#x27; \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0448\u0440\u0438\u0444\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e. \u041e\u0448\u0438\u0431\u043a\u0430: cannot open resource\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u0422\u0435\u043a\u0441\u0442&amp;#x27;: &amp;#x27;latin-1&amp;#x27; codec can&amp;#x27;t encode characters in position 0-4: ordinal not in range(256)\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_generate_overlay_with_text_and_logo&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_generate_overlay_with_text_and_logo&#34;, &#34;duration&#34;: &#34;18 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_generate_overlay_with_text_and_logo&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;18 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_image_processor.py::test_generate_overlay_text_only&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_generate_overlay_text_only&#34;, &#34;duration&#34;: &#34;7 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_generate_overlay_text_only&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;7 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_image_processor.py::test_generate_overlay_with_invalid_data&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_generate_overlay_with_invalid_data&#34;, &#34;duration&#34;: &#34;6 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_generate_overlay_with_invalid_data&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;6 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:121 \u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0448\u0440\u0438\u0444\u0442\u0430 &amp;#x27;missing_font.ttf&amp;#x27;: cannot open resource. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0448\u0440\u0438\u0444\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e.\nWARNING  image_processor:image_processor.py:138 Overlay: \u043e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u043a\u0435 \u0442\u0435\u043a\u0441\u0442\u0430 &amp;#x27;Faulty&amp;#x27;: unknown color specifier: &amp;#x27;badcolor&amp;#x27;\nWARNING  image_processor:image_processor.py:164 Overlay: \u043d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043b\u043e\u0433\u043e\u0442\u0438\u043f &amp;#x27;missing_logo.png&amp;#x27;: [Errno 2] No such file or directory: &amp;#x27;missing_logo.png&amp;#x27;\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_text_draw_failure&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_text_draw_failure&#34;, &#34;duration&#34;: &#34;139 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_text_draw_failure&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;139 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/5 [00:00&amp;lt;?, ?it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 44.38it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 44.38it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:99 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 broken.png: cannot identify image file &amp;#x27;C:\\\\Users\\\\73B5~1\\\\AppData\\\\Local\\\\Temp\\\\tmpsau7abgx\\\\broken.png&amp;#x27;\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u041e\u0448\u0438\u0431\u043a\u0430 \u0442\u0435\u043a\u0441\u0442\u0430&amp;#x27;: textbbox failed\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u041e\u0448\u0438\u0431\u043a\u0430 \u0442\u0435\u043a\u0441\u0442\u0430&amp;#x27;: textbbox failed\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u041e\u0448\u0438\u0431\u043a\u0430 \u0442\u0435\u043a\u0441\u0442\u0430&amp;#x27;: textbbox failed\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_valid_logo_coords_as_string&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_valid_logo_coords_as_string&#34;, &#34;duration&#34;: &#34;270 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_valid_logo_coords_as_string&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;270 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/5 [00:00&amp;lt;?, ?it/s]\r 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 4/5 [00:00&amp;lt;00:00, 35.80it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5/5 [00:00&amp;lt;00:00, 30.20it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:99 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 broken.png: cannot identify image file &amp;#x27;C:\\\\Users\\\\73B5~1\\\\AppData\\\\Local\\\\Temp\\\\tmpt2dbzzwj\\\\broken.png&amp;#x27;\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_generate_overlay_valid_coords&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_generate_overlay_valid_coords&#34;, &#34;duration&#34;: &#34;5 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_generate_overlay_valid_coords&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;5 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_image_processor.py::test_image_processing_with_invalid_color_and_logo_coords&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_image_processing_with_invalid_color_and_logo_coords&#34;, &#34;duration&#34;: &#34;36 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_image_processing_with_invalid_color_and_logo_coords&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;36 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/1 [00:00&amp;lt;?, ?it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 1/1 [00:00&amp;lt;00:00, 34.48it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:25 \u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u0446\u0432\u0435\u0442 &amp;#x27;invalid_color&amp;#x27;, \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e \u2014 &amp;#x27;black&amp;#x27;\nWARNING  image_processor:image_processor.py:46 \u0428\u0440\u0438\u0444\u0442 \u043f\u043e \u043f\u0443\u0442\u0438 &amp;#x27;/invalid/font/path.ttf&amp;#x27; \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0448\u0440\u0438\u0444\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e. \u041e\u0448\u0438\u0431\u043a\u0430: cannot open resource\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u0422\u0435\u0441\u0442&amp;#x27;: &amp;#x27;latin-1&amp;#x27; codec can&amp;#x27;t encode characters in position 0-3: ordinal not in range(256)\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_generate_overlay_full_branch&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_generate_overlay_full_branch&#34;, &#34;duration&#34;: &#34;23 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_generate_overlay_full_branch&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;23 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:121 \u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0448\u0440\u0438\u0444\u0442\u0430 &amp;#x27;/nonexistent/path.ttf&amp;#x27;: cannot open resource. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0448\u0440\u0438\u0444\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e.\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_invalid_font_path&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_invalid_font_path&#34;, &#34;duration&#34;: &#34;29 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_invalid_font_path&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;29 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stderr call -----------------------------\n\r  0%|          | 0/1 [00:00&amp;lt;?, ?it/s]\r100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 1/1 [00:00&amp;lt;00:00, 43.60it/s]\n\n------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:46 \u0428\u0440\u0438\u0444\u0442 \u043f\u043e \u043f\u0443\u0442\u0438 &amp;#x27;/nonexistent/font.ttf&amp;#x27; \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0448\u0440\u0438\u0444\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e. \u041e\u0448\u0438\u0431\u043a\u0430: cannot open resource\nWARNING  image_processor:image_processor.py:64 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 &amp;#x27;\u0422\u0435\u0441\u0442&amp;#x27;: &amp;#x27;latin-1&amp;#x27; codec can&amp;#x27;t encode characters in position 0-3: ordinal not in range(256)\n\n&#34;}], &#34;tests/pytest_image_processor.py::test_generate_overlay_invalid_logo_coords&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_image_processor.py::test_generate_overlay_invalid_logo_coords&#34;, &#34;duration&#34;: &#34;11 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_image_processor.py::test_generate_overlay_invalid_logo_coords&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;11 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log call -------------------------------\nWARNING  image_processor:image_processor.py:159 Overlay: \u043e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0435\u043e\u0431\u0440\u0430\u0437\u043e\u0432\u0430\u043d\u0438\u044f \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442 \u043b\u043e\u0433\u043e\u0442\u0438\u043f\u0430: invalid,coords\n\n&#34;}], &#34;tests/pytest_logger_setup.py::test_setup_logging_creates_logfile&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_logger_setup.py::test_setup_logging_creates_logfile&#34;, &#34;duration&#34;: &#34;95 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_logger_setup.py::test_setup_logging_creates_logfile&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;95 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,792 - INFO - Test log write\n&#34;}], &#34;tests/pytest_main.py::test_main_entry&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_main.py::test_main_entry&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_main.py::test_main_entry&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_minimal&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_minimal&#34;, &#34;duration&#34;: &#34;11 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_minimal&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;11 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,899 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,900 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_minimal0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\n2025-06-06 09:53:10,900 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_minimal0\n2025-06-06 09:53:10,901 - INFO - \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\n2025-06-06 09:53:10,902 - INFO - \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\n2025-06-06 09:53:10,902 - INFO - \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_minimal0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_minimal0\nINFO     runner:runner.py:97 \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\nINFO     runner:runner.py:129 \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\nINFO     runner:runner.py:130 \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_zoom_overlay_generation&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_zoom_overlay_generation&#34;, &#34;duration&#34;: &#34;9 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_zoom_overlay_generation&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;9 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,911 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,911 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_zoom_overlay_gene0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: &amp;#x27;Overlayed&amp;#x27;, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.2, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\n2025-06-06 09:53:10,912 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_zoom_overlay_gene0\n2025-06-06 09:53:10,912 - INFO - Zoom-\u0440\u0435\u0436\u0438\u043c \u0430\u043a\u0442\u0438\u0432\u0435\u043d \u2014 \u0442\u0435\u043a\u0441\u0442 \u0438 \u043b\u043e\u0433\u043e\u0442\u0438\u043f \u0431\u0443\u0434\u0443\u0442 \u043d\u0430\u043b\u043e\u0436\u0435\u043d\u044b \u0447\u0435\u0440\u0435\u0437 \u043e\u0432\u0435\u0440\u043b\u0435\u0438\n2025-06-06 09:53:10,912 - INFO - \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\n2025-06-06 09:53:10,913 - INFO - \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\n2025-06-06 09:53:10,913 - INFO - \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_zoom_overlay_gene0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: &amp;#x27;Overlayed&amp;#x27;, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.2, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_zoom_overlay_gene0\nINFO     runner:runner.py:38 Zoom-\u0440\u0435\u0436\u0438\u043c \u0430\u043a\u0442\u0438\u0432\u0435\u043d \u2014 \u0442\u0435\u043a\u0441\u0442 \u0438 \u043b\u043e\u0433\u043e\u0442\u0438\u043f \u0431\u0443\u0434\u0443\u0442 \u043d\u0430\u043b\u043e\u0436\u0435\u043d\u044b \u0447\u0435\u0440\u0435\u0437 \u043e\u0432\u0435\u0440\u043b\u0435\u0438\nINFO     runner:runner.py:97 \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\nINFO     runner:runner.py:129 \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\nINFO     runner:runner.py:130 \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_autocover_frame&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_autocover_frame&#34;, &#34;duration&#34;: &#34;9 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_autocover_frame&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;9 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,920 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,920 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_autocover_frame0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: True, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\n2025-06-06 09:53:10,921 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_autocover_frame0\n2025-06-06 09:53:10,921 - INFO - \u041e\u0431\u043b\u043e\u0436\u043a\u0430 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430: thumbnail.png (\u043a\u0430\u0434\u0440 #0)\n2025-06-06 09:53:10,923 - INFO - \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\n2025-06-06 09:53:10,923 - INFO - \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\n2025-06-06 09:53:10,923 - INFO - \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_autocover_frame0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: True, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_autocover_frame0\nINFO     runner:runner.py:67 \u041e\u0431\u043b\u043e\u0436\u043a\u0430 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430: thumbnail.png (\u043a\u0430\u0434\u0440 #0)\nINFO     runner:runner.py:97 \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\nINFO     runner:runner.py:129 \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\nINFO     runner:runner.py:130 \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_empty_images&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_empty_images&#34;, &#34;duration&#34;: &#34;5 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_empty_images&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;5 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,930 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,930 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_empty_images0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\n2025-06-06 09:53:10,931 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_empty_images0\n2025-06-06 09:53:10,931 - ERROR - \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_empty_images0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_empty_images0\nERROR    runner:runner.py:52 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_audiofile_exception&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_audiofile_exception&#34;, &#34;duration&#34;: &#34;45 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_audiofile_exception&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;45 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,937 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,938 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_audiofile_excepti0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: &amp;#x27;bad.mp3&amp;#x27;, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\n2025-06-06 09:53:10,938 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_audiofile_excepti0\n2025-06-06 09:53:10,938 - WARNING - \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0438\u0442\u044c \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0430\u0443\u0434\u0438\u043e: Broken audio\n2025-06-06 09:53:10,938 - INFO - \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\n2025-06-06 09:53:10,939 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0430\u0443\u0434\u0438\u043e: bad.mp3\n2025-06-06 09:53:10,975 - ERROR - \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u0430\u0443\u0434\u0438\u043e\u0444\u0430\u0439\u043b\u0430: MoviePy error: the file bad.mp3 could not be found!\nPlease check that you entered the correct path.\nTraceback (most recent call last):\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\audio_processor.py&amp;quot;, line 10, in load_audio_clip\n    clip = AudioFileClip(path)\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\audio\\io\\AudioFileClip.py&amp;quot;, line 70, in __init__\n    self.reader = FFMPEG_AudioReader(filename, fps=fps, nbytes=nbytes,\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\audio\\io\\readers.py&amp;quot;, line 51, in __init__\n    infos = ffmpeg_parse_infos(filename)\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\video\\io\\ffmpeg_reader.py&amp;quot;, line 270, in ffmpeg_parse_infos\n    raise IOError((&amp;quot;MoviePy error: the file %s could not be found!\\n&amp;quot;\nOSError: MoviePy error: the file bad.mp3 could not be found!\nPlease check that you entered the correct path.\n2025-06-06 09:53:10,976 - ERROR - \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u0430\u0443\u0434\u0438\u043e\u0444\u0430\u0439\u043b\u0430: MoviePy error: the file bad.mp3 could not be found!\nPlease check that you entered the correct path.\n2025-06-06 09:53:10,977 - INFO - \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\n2025-06-06 09:53:10,977 - INFO - \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.04 \u0441\u0435\u043a\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_audiofile_excepti0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: &amp;#x27;bad.mp3&amp;#x27;, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_audiofile_excepti0\nWARNING  runner:runner.py:81 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0438\u0442\u044c \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0430\u0443\u0434\u0438\u043e: Broken audio\nINFO     runner:runner.py:97 \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\nINFO     audio_processor:audio_processor.py:9 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0430\u0443\u0434\u0438\u043e: bad.mp3\nERROR    audio_processor:audio_processor.py:34 \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u0430\u0443\u0434\u0438\u043e\u0444\u0430\u0439\u043b\u0430: MoviePy error: the file bad.mp3 could not be found!\nPlease check that you entered the correct path.\nTraceback (most recent call last):\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\audio_processor.py&amp;quot;, line 10, in load_audio_clip\n    clip = AudioFileClip(path)\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\audio\\io\\AudioFileClip.py&amp;quot;, line 70, in __init__\n    self.reader = FFMPEG_AudioReader(filename, fps=fps, nbytes=nbytes,\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\audio\\io\\readers.py&amp;quot;, line 51, in __init__\n    infos = ffmpeg_parse_infos(filename)\n  File &amp;quot;C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\PycharmProjects\\Vertical_Video_Maker\\.venv\\lib\\site-packages\\moviepy\\video\\io\\ffmpeg_reader.py&amp;quot;, line 270, in ffmpeg_parse_infos\n    raise IOError((&amp;quot;MoviePy error: the file %s could not be found!\\n&amp;quot;\nOSError: MoviePy error: the file bad.mp3 could not be found!\nPlease check that you entered the correct path.\nERROR    runner:runner.py:109 \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u0430\u0443\u0434\u0438\u043e\u0444\u0430\u0439\u043b\u0430: MoviePy error: the file bad.mp3 could not be found!\nPlease check that you entered the correct path.\nINFO     runner:runner.py:129 \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\nINFO     runner:runner.py:130 \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.04 \u0441\u0435\u043a\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_audio_clip_exception&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_audio_clip_exception&#34;, &#34;duration&#34;: &#34;6 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_audio_clip_exception&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;6 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,983 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,984 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_audio_clip_except0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: &amp;#x27;broken.mp3&amp;#x27;, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\n2025-06-06 09:53:10,984 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_audio_clip_except0\n2025-06-06 09:53:10,984 - INFO - \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=cut\n2025-06-06 09:53:10,984 - ERROR - \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u0430\u0443\u0434\u0438\u043e\u0444\u0430\u0439\u043b\u0430: Decoder error\n2025-06-06 09:53:10,985 - INFO - \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\n2025-06-06 09:53:10,985 - INFO - \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_audio_clip_except0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: &amp;#x27;broken.mp3&amp;#x27;, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_audio_clip_except0\nINFO     runner:runner.py:97 \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=cut\nERROR    runner:runner.py:109 \u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435 \u0430\u0443\u0434\u0438\u043e\u0444\u0430\u0439\u043b\u0430: Decoder error\nINFO     runner:runner.py:129 \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\nINFO     runner:runner.py:130 \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_images_loop_mode&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_images_loop_mode&#34;, &#34;duration&#34;: &#34;7 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_images_loop_mode&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;7 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,991 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,991 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_images_loop_mode0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: &amp;#x27;short.mp3&amp;#x27;, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;images_loop&amp;#x27;}\n2025-06-06 09:53:10,992 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_images_loop_mode0\n2025-06-06 09:53:10,992 - WARNING - \u0410\u0443\u0434\u0438\u043e \u043a\u043e\u0440\u043e\u0447\u0435, \u0431\u0443\u0434\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c\u0441\u044f loop \u0434\u043b\u044f audio.\n2025-06-06 09:53:10,992 - INFO - \u0420\u0435\u0436\u0438\u043c\u044b: mode=images_loop, image_mode=basic, audio_mode=loop\n2025-06-06 09:53:10,993 - INFO - \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\n2025-06-06 09:53:10,993 - INFO - \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_images_loop_mode0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: None, &amp;#x27;duration&amp;#x27;: 1.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: &amp;#x27;short.mp3&amp;#x27;, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;images_loop&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_images_loop_mode0\nWARNING  runner:runner.py:89 \u0410\u0443\u0434\u0438\u043e \u043a\u043e\u0440\u043e\u0447\u0435, \u0431\u0443\u0434\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c\u0441\u044f loop \u0434\u043b\u044f audio.\nINFO     runner:runner.py:97 \u0420\u0435\u0436\u0438\u043c\u044b: mode=images_loop, image_mode=basic, audio_mode=loop\nINFO     runner:runner.py:129 \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\nINFO     runner:runner.py:130 \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_autocover_by_second&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_autocover_by_second&#34;, &#34;duration&#34;: &#34;6 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_autocover_by_second&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;6 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:10,999 - INFO - ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\n2025-06-06 09:53:10,999 - INFO - \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_autocover_by_seco0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: &amp;#x27;1.0&amp;#x27;, &amp;#x27;duration&amp;#x27;: 2.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\n2025-06-06 09:53:11,000 - INFO - \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_autocover_by_seco0\n2025-06-06 09:53:11,000 - INFO - \u041e\u0431\u043b\u043e\u0436\u043a\u0430 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430: thumbnail.png (\u043a\u0430\u0434\u0440 #0)\n2025-06-06 09:53:11,000 - INFO - \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\n2025-06-06 09:53:11,001 - INFO - \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\n2025-06-06 09:53:11,001 - INFO - \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n------------------------------ Captured log call -------------------------------\nINFO     runner:runner.py:12 ==== \u0417\u0430\u043f\u0443\u0441\u043a VVM \u0447\u0435\u0440\u0435\u0437 runner.py ====\nINFO     runner:runner.py:15 \u0410\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u044b \u0437\u0430\u043f\u0443\u0441\u043a\u0430: {&amp;#x27;images&amp;#x27;: &amp;#x27;C:\\\\Users\\\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\\\pytest-25\\\\test_run_vvm_autocover_by_seco0&amp;#x27;, &amp;#x27;bgcolor&amp;#x27;: &amp;#x27;black&amp;#x27;, &amp;#x27;text&amp;#x27;: None, &amp;#x27;text_position&amp;#x27;: &amp;#x27;bottom&amp;#x27;, &amp;#x27;font_size&amp;#x27;: 40, &amp;#x27;font_color&amp;#x27;: &amp;#x27;white&amp;#x27;, &amp;#x27;font_path&amp;#x27;: None, &amp;#x27;logo_path&amp;#x27;: None, &amp;#x27;logo_scale&amp;#x27;: 0.1, &amp;#x27;logo_coords&amp;#x27;: None, &amp;#x27;autocover&amp;#x27;: &amp;#x27;1.0&amp;#x27;, &amp;#x27;duration&amp;#x27;: 2.0, &amp;#x27;fps&amp;#x27;: 24, &amp;#x27;output&amp;#x27;: &amp;#x27;dummy.mp4&amp;#x27;, &amp;#x27;bitrate&amp;#x27;: &amp;#x27;1000k&amp;#x27;, &amp;#x27;crf&amp;#x27;: None, &amp;#x27;audio&amp;#x27;: None, &amp;#x27;transition&amp;#x27;: &amp;#x27;none&amp;#x27;, &amp;#x27;transition_duration&amp;#x27;: 0.5, &amp;#x27;zoom&amp;#x27;: 0.0, &amp;#x27;zoom_out&amp;#x27;: 0.0, &amp;#x27;mode&amp;#x27;: &amp;#x27;basic&amp;#x27;}\nINFO     runner:runner.py:18 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430: C:\\Users\\\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\AppData\\Local\\Temp\\pytest-of-\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c\\pytest-25\\test_run_vvm_autocover_by_seco0\nINFO     runner:runner.py:67 \u041e\u0431\u043b\u043e\u0436\u043a\u0430 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430: thumbnail.png (\u043a\u0430\u0434\u0440 #0)\nINFO     runner:runner.py:97 \u0420\u0435\u0436\u0438\u043c\u044b: mode=basic, image_mode=basic, audio_mode=loop\nINFO     runner:runner.py:129 \u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u043d\u043e: dummy.mp4\nINFO     runner:runner.py:130 \u041e\u0431\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f: 0.00 \u0441\u0435\u043a\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_no_images_loaded&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_no_images_loaded&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_no_images_loaded&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:11,006 - ERROR - \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.\n\n------------------------------ Captured log call -------------------------------\nERROR    runner:runner.py:52 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.\n\n&#34;}], &#34;tests/pytest_runner.py::test_run_vvm_autocover_no_images&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_runner.py::test_run_vvm_autocover_no_images&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_runner.py::test_run_vvm_autocover_no_images&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:11,012 - ERROR - \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.\n\n------------------------------ Captured log call -------------------------------\nERROR    runner:runner.py:52 \u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.\n\n&#34;}], &#34;tests/pytest_utils.py::test_slide_transition_duration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_utils.py::test_slide_transition_duration&#34;, &#34;duration&#34;: &#34;70 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_utils.py::test_slide_transition_duration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;70 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_utils.py::test_push_transition_duration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_utils.py::test_push_transition_duration&#34;, &#34;duration&#34;: &#34;54 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_utils.py::test_push_transition_duration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;54 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[none]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[none]&#34;, &#34;duration&#34;: &#34;00:00:07&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_create_video_with_transitions[none]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:07&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:11,155 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\n2025-06-06 09:53:11,555 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpsfyrbr6r.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpsfyrbr6r.mp4.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpsfyrbr6r.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpsfyrbr6r.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rt:   0%|          | 0/72 [00:00&amp;lt;?, ?it/s, now=None]\rt:   4%|\u258d         | 3/72 [00:00&amp;lt;00:02, 24.80it/s, now=None]\rt:   8%|\u258a         | 6/72 [00:00&amp;lt;00:04, 15.15it/s, now=None]\rt:  11%|\u2588         | 8/72 [00:00&amp;lt;00:04, 14.06it/s, now=None]\rt:  14%|\u2588\u258d        | 10/72 [00:00&amp;lt;00:04, 13.41it/s, now=None]\rt:  17%|\u2588\u258b        | 12/72 [00:00&amp;lt;00:04, 12.36it/s, now=None]\rt:  19%|\u2588\u2589        | 14/72 [00:01&amp;lt;00:04, 11.86it/s, now=None]\rt:  22%|\u2588\u2588\u258f       | 16/72 [00:01&amp;lt;00:05, 10.99it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 18/72 [00:01&amp;lt;00:04, 10.99it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 20/72 [00:01&amp;lt;00:04, 11.27it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 22/72 [00:01&amp;lt;00:04, 11.34it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 24/72 [00:01&amp;lt;00:04, 11.41it/s, now=None]\rt:  36%|\u2588\u2588\u2588\u258c      | 26/72 [00:02&amp;lt;00:03, 12.26it/s, now=None]\rt:  39%|\u2588\u2588\u2588\u2589      | 28/72 [00:02&amp;lt;00:03, 11.94it/s, now=None]\rt:  42%|\u2588\u2588\u2588\u2588\u258f     | 30/72 [00:02&amp;lt;00:03, 12.08it/s, now=None]\rt:  44%|\u2588\u2588\u2588\u2588\u258d     | 32/72 [00:02&amp;lt;00:03, 11.71it/s, now=None]\rt:  47%|\u2588\u2588\u2588\u2588\u258b     | 34/72 [00:02&amp;lt;00:03, 11.82it/s, now=None]\rt:  50%|\u2588\u2588\u2588\u2588\u2588     | 36/72 [00:02&amp;lt;00:03, 11.79it/s, now=None]\rt:  53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 38/72 [00:03&amp;lt;00:02, 11.82it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258c    | 40/72 [00:03&amp;lt;00:02, 11.74it/s, now=None]\rt:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 42/72 [00:03&amp;lt;00:02, 11.60it/s, now=None]\rt:  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 44/72 [00:03&amp;lt;00:02, 11.51it/s, now=None]\rt:  64%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 46/72 [00:03&amp;lt;00:02, 11.47it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 48/72 [00:04&amp;lt;00:02, 11.42it/s, now=None]\rt:  69%|\u2588\u2588\u2588\u2588\u2588\u2588\u2589   | 50/72 [00:04&amp;lt;00:01, 12.29it/s, now=None]\rt:  72%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f  | 52/72 [00:04&amp;lt;00:01, 12.17it/s, now=None]\rt:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 54/72 [00:04&amp;lt;00:01, 12.15it/s, now=None]\rt:  78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a  | 56/72 [00:04&amp;lt;00:01, 12.06it/s, now=None]\rt:  81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 58/72 [00:04&amp;lt;00:01, 11.95it/s, now=None]\rt:  83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 60/72 [00:04&amp;lt;00:01, 11.87it/s, now=None]\rt:  86%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 62/72 [00:05&amp;lt;00:00, 11.66it/s, now=None]\rt:  89%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 64/72 [00:05&amp;lt;00:00, 11.51it/s, now=None]\rt:  92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 66/72 [00:05&amp;lt;00:00, 11.10it/s, now=None]\rt:  94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 68/72 [00:05&amp;lt;00:00, 11.27it/s, now=None]\rt:  97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 70/72 [00:05&amp;lt;00:00, 11.37it/s, now=None]\rt: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 72/72 [00:06&amp;lt;00:00, 11.43it/s, now=None]\r                                                            \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpsfyrbr6r.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[fade]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[fade]&#34;, &#34;duration&#34;: &#34;00:00:10&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_create_video_with_transitions[fade]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:10&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:18,067 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\n2025-06-06 09:53:18,779 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp3wryz81h.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp3wryz81h.mp4.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp3wryz81h.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp3wryz81h.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rt:   0%|          | 0/72 [00:00&amp;lt;?, ?it/s, now=None]\rt:   3%|\u258e         | 2/72 [00:00&amp;lt;00:03, 18.07it/s, now=None]\rt:   6%|\u258c         | 4/72 [00:00&amp;lt;00:06, 10.24it/s, now=None]\rt:   8%|\u258a         | 6/72 [00:00&amp;lt;00:07,  8.54it/s, now=None]\rt:  10%|\u2589         | 7/72 [00:00&amp;lt;00:08,  7.91it/s, now=None]\rt:  11%|\u2588         | 8/72 [00:00&amp;lt;00:08,  7.74it/s, now=None]\rt:  12%|\u2588\u258e        | 9/72 [00:01&amp;lt;00:08,  7.80it/s, now=None]\rt:  14%|\u2588\u258d        | 10/72 [00:01&amp;lt;00:07,  7.79it/s, now=None]\rt:  15%|\u2588\u258c        | 11/72 [00:01&amp;lt;00:07,  7.75it/s, now=None]\rt:  17%|\u2588\u258b        | 12/72 [00:01&amp;lt;00:07,  7.55it/s, now=None]\rt:  18%|\u2588\u258a        | 13/72 [00:01&amp;lt;00:08,  7.34it/s, now=None]\rt:  21%|\u2588\u2588        | 15/72 [00:01&amp;lt;00:07,  8.02it/s, now=None]\rt:  22%|\u2588\u2588\u258f       | 16/72 [00:01&amp;lt;00:07,  7.84it/s, now=None]\rt:  24%|\u2588\u2588\u258e       | 17/72 [00:02&amp;lt;00:07,  7.69it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 18/72 [00:02&amp;lt;00:07,  7.68it/s, now=None]\rt:  26%|\u2588\u2588\u258b       | 19/72 [00:02&amp;lt;00:07,  7.04it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 20/72 [00:02&amp;lt;00:07,  7.11it/s, now=None]\rt:  29%|\u2588\u2588\u2589       | 21/72 [00:02&amp;lt;00:07,  7.09it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 22/72 [00:02&amp;lt;00:07,  7.03it/s, now=None]\rt:  32%|\u2588\u2588\u2588\u258f      | 23/72 [00:02&amp;lt;00:06,  7.15it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 24/72 [00:03&amp;lt;00:06,  7.32it/s, now=None]\rt:  35%|\u2588\u2588\u2588\u258d      | 25/72 [00:03&amp;lt;00:06,  7.17it/s, now=None]\rt:  38%|\u2588\u2588\u2588\u258a      | 27/72 [00:03&amp;lt;00:05,  7.89it/s, now=None]\rt:  39%|\u2588\u2588\u2588\u2589      | 28/72 [00:03&amp;lt;00:05,  7.84it/s, now=None]\rt:  40%|\u2588\u2588\u2588\u2588      | 29/72 [00:03&amp;lt;00:05,  7.66it/s, now=None]\rt:  42%|\u2588\u2588\u2588\u2588\u258f     | 30/72 [00:03&amp;lt;00:05,  7.50it/s, now=None]\rt:  43%|\u2588\u2588\u2588\u2588\u258e     | 31/72 [00:04&amp;lt;00:05,  7.62it/s, now=None]\rt:  44%|\u2588\u2588\u2588\u2588\u258d     | 32/72 [00:04&amp;lt;00:05,  7.56it/s, now=None]\rt:  46%|\u2588\u2588\u2588\u2588\u258c     | 33/72 [00:04&amp;lt;00:05,  7.55it/s, now=None]\rt:  47%|\u2588\u2588\u2588\u2588\u258b     | 34/72 [00:04&amp;lt;00:05,  7.58it/s, now=None]\rt:  49%|\u2588\u2588\u2588\u2588\u258a     | 35/72 [00:04&amp;lt;00:05,  7.17it/s, now=None]\rt:  50%|\u2588\u2588\u2588\u2588\u2588     | 36/72 [00:04&amp;lt;00:05,  7.15it/s, now=None]\rt:  51%|\u2588\u2588\u2588\u2588\u2588\u258f    | 37/72 [00:04&amp;lt;00:04,  7.04it/s, now=None]\rt:  54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 39/72 [00:05&amp;lt;00:04,  8.02it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258c    | 40/72 [00:05&amp;lt;00:04,  7.92it/s, now=None]\rt:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 41/72 [00:05&amp;lt;00:03,  7.83it/s, now=None]\rt:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 42/72 [00:05&amp;lt;00:03,  7.71it/s, now=None]\rt:  60%|\u2588\u2588\u2588\u2588\u2588\u2589    | 43/72 [00:05&amp;lt;00:03,  7.29it/s, now=None]\rt:  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 44/72 [00:05&amp;lt;00:03,  7.08it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 45/72 [00:05&amp;lt;00:04,  6.46it/s, now=None]\rt:  64%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 46/72 [00:06&amp;lt;00:03,  6.69it/s, now=None]\rt:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 47/72 [00:06&amp;lt;00:03,  6.88it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 48/72 [00:06&amp;lt;00:03,  6.90it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 49/72 [00:06&amp;lt;00:03,  7.03it/s, now=None]\rt:  71%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 51/72 [00:06&amp;lt;00:02,  9.47it/s, now=None]\rt:  74%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 53/72 [00:06&amp;lt;00:01, 10.37it/s, now=None]\rt:  76%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 55/72 [00:06&amp;lt;00:01, 10.95it/s, now=None]\rt:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 57/72 [00:07&amp;lt;00:01, 11.23it/s, now=None]\rt:  82%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 59/72 [00:07&amp;lt;00:01, 11.41it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 61/72 [00:07&amp;lt;00:00, 11.08it/s, now=None]\rt:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 63/72 [00:07&amp;lt;00:00, 11.13it/s, now=None]\rt:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 65/72 [00:07&amp;lt;00:00, 10.95it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 67/72 [00:08&amp;lt;00:00, 10.43it/s, now=None]\rt:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 69/72 [00:08&amp;lt;00:00, 10.54it/s, now=None]\rt:  99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 71/72 [00:08&amp;lt;00:00, 10.63it/s, now=None]\r                                                            \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp3wryz81h.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[slide]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[slide]&#34;, &#34;duration&#34;: &#34;00:00:14&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_create_video_with_transitions[slide]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:14&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:28,066 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\n2025-06-06 09:53:28,683 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp5f9tg8sf.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp5f9tg8sf.mp4.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp5f9tg8sf.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp5f9tg8sf.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rt:   0%|          | 0/72 [00:00&amp;lt;?, ?it/s, now=None]\rt:   3%|\u258e         | 2/72 [00:00&amp;lt;00:04, 16.64it/s, now=None]\rt:   6%|\u258c         | 4/72 [00:00&amp;lt;00:04, 14.46it/s, now=None]\rt:   8%|\u258a         | 6/72 [00:00&amp;lt;00:04, 13.42it/s, now=None]\rt:  11%|\u2588         | 8/72 [00:00&amp;lt;00:05, 12.78it/s, now=None]\rt:  14%|\u2588\u258d        | 10/72 [00:00&amp;lt;00:05, 11.64it/s, now=None]\rt:  17%|\u2588\u258b        | 12/72 [00:00&amp;lt;00:05, 11.72it/s, now=None]\rt:  19%|\u2588\u2589        | 14/72 [00:01&amp;lt;00:06,  8.54it/s, now=None]\rt:  21%|\u2588\u2588        | 15/72 [00:01&amp;lt;00:09,  5.94it/s, now=None]\rt:  22%|\u2588\u2588\u258f       | 16/72 [00:02&amp;lt;00:12,  4.60it/s, now=None]\rt:  24%|\u2588\u2588\u258e       | 17/72 [00:02&amp;lt;00:13,  4.09it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 18/72 [00:02&amp;lt;00:14,  3.73it/s, now=None]\rt:  26%|\u2588\u2588\u258b       | 19/72 [00:03&amp;lt;00:15,  3.51it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 20/72 [00:03&amp;lt;00:15,  3.29it/s, now=None]\rt:  29%|\u2588\u2588\u2589       | 21/72 [00:03&amp;lt;00:16,  3.18it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 22/72 [00:04&amp;lt;00:16,  3.07it/s, now=None]\rt:  32%|\u2588\u2588\u2588\u258f      | 23/72 [00:04&amp;lt;00:16,  2.97it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 24/72 [00:04&amp;lt;00:16,  2.94it/s, now=None]\rt:  35%|\u2588\u2588\u2588\u258d      | 25/72 [00:05&amp;lt;00:16,  2.88it/s, now=None]\rt:  38%|\u2588\u2588\u2588\u258a      | 27/72 [00:05&amp;lt;00:09,  4.52it/s, now=None]\rt:  40%|\u2588\u2588\u2588\u2588      | 29/72 [00:05&amp;lt;00:07,  5.93it/s, now=None]\rt:  43%|\u2588\u2588\u2588\u2588\u258e     | 31/72 [00:05&amp;lt;00:05,  7.24it/s, now=None]\rt:  46%|\u2588\u2588\u2588\u2588\u258c     | 33/72 [00:05&amp;lt;00:04,  8.35it/s, now=None]\rt:  49%|\u2588\u2588\u2588\u2588\u258a     | 35/72 [00:06&amp;lt;00:04,  8.89it/s, now=None]\rt:  51%|\u2588\u2588\u2588\u2588\u2588\u258f    | 37/72 [00:06&amp;lt;00:03,  9.71it/s, now=None]\rt:  54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 39/72 [00:06&amp;lt;00:05,  6.13it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258c    | 40/72 [00:07&amp;lt;00:06,  5.14it/s, now=None]\rt:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 41/72 [00:07&amp;lt;00:06,  4.47it/s, now=None]\rt:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 42/72 [00:07&amp;lt;00:07,  3.97it/s, now=None]\rt:  60%|\u2588\u2588\u2588\u2588\u2588\u2589    | 43/72 [00:08&amp;lt;00:07,  3.64it/s, now=None]\rt:  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 44/72 [00:08&amp;lt;00:08,  3.36it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 45/72 [00:08&amp;lt;00:08,  3.16it/s, now=None]\rt:  64%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 46/72 [00:09&amp;lt;00:08,  3.13it/s, now=None]\rt:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 47/72 [00:09&amp;lt;00:08,  3.07it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 48/72 [00:09&amp;lt;00:08,  2.96it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 49/72 [00:10&amp;lt;00:07,  2.89it/s, now=None]\rt:  71%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 51/72 [00:10&amp;lt;00:04,  4.60it/s, now=None]\rt:  74%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 53/72 [00:10&amp;lt;00:03,  6.07it/s, now=None]\rt:  76%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 55/72 [00:10&amp;lt;00:02,  7.41it/s, now=None]\rt:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 57/72 [00:10&amp;lt;00:01,  8.38it/s, now=None]\rt:  82%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 59/72 [00:11&amp;lt;00:01,  9.24it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 61/72 [00:11&amp;lt;00:01,  9.97it/s, now=None]\rt:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 63/72 [00:11&amp;lt;00:00, 10.14it/s, now=None]\rt:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 65/72 [00:11&amp;lt;00:00, 10.61it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 67/72 [00:11&amp;lt;00:00, 10.83it/s, now=None]\rt:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 69/72 [00:12&amp;lt;00:00, 10.47it/s, now=None]\rt:  99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 71/72 [00:12&amp;lt;00:00,  9.83it/s, now=None]\r                                                            \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp5f9tg8sf.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[push]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_create_video_with_transitions[push]&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_create_video_with_transitions[push]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:41,619 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\n2025-06-06 09:53:42,102 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpro_mezh4.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpro_mezh4.mp4.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpro_mezh4.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpro_mezh4.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rt:   0%|          | 0/72 [00:00&amp;lt;?, ?it/s, now=None]\rt:   4%|\u258d         | 3/72 [00:00&amp;lt;00:03, 19.83it/s, now=None]\rt:   7%|\u258b         | 5/72 [00:00&amp;lt;00:04, 15.07it/s, now=None]\rt:  10%|\u2589         | 7/72 [00:00&amp;lt;00:04, 14.01it/s, now=None]\rt:  12%|\u2588\u258e        | 9/72 [00:00&amp;lt;00:04, 13.27it/s, now=None]\rt:  15%|\u2588\u258c        | 11/72 [00:00&amp;lt;00:04, 12.97it/s, now=None]\rt:  18%|\u2588\u258a        | 13/72 [00:00&amp;lt;00:04, 12.70it/s, now=None]\rt:  21%|\u2588\u2588        | 15/72 [00:01&amp;lt;00:08,  6.74it/s, now=None]\rt:  22%|\u2588\u2588\u258f       | 16/72 [00:01&amp;lt;00:10,  5.49it/s, now=None]\rt:  24%|\u2588\u2588\u258e       | 17/72 [00:02&amp;lt;00:11,  4.64it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 18/72 [00:02&amp;lt;00:13,  4.07it/s, now=None]\rt:  26%|\u2588\u2588\u258b       | 19/72 [00:02&amp;lt;00:14,  3.70it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 20/72 [00:03&amp;lt;00:14,  3.48it/s, now=None]\rt:  29%|\u2588\u2588\u2589       | 21/72 [00:03&amp;lt;00:15,  3.33it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 22/72 [00:03&amp;lt;00:15,  3.22it/s, now=None]\rt:  32%|\u2588\u2588\u2588\u258f      | 23/72 [00:04&amp;lt;00:15,  3.12it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 24/72 [00:04&amp;lt;00:15,  3.05it/s, now=None]\rt:  35%|\u2588\u2588\u2588\u258d      | 25/72 [00:04&amp;lt;00:15,  3.00it/s, now=None]\rt:  38%|\u2588\u2588\u2588\u258a      | 27/72 [00:05&amp;lt;00:09,  4.72it/s, now=None]\rt:  40%|\u2588\u2588\u2588\u2588      | 29/72 [00:05&amp;lt;00:06,  6.25it/s, now=None]\rt:  43%|\u2588\u2588\u2588\u2588\u258e     | 31/72 [00:05&amp;lt;00:05,  7.53it/s, now=None]\rt:  46%|\u2588\u2588\u2588\u2588\u258c     | 33/72 [00:05&amp;lt;00:04,  8.63it/s, now=None]\rt:  49%|\u2588\u2588\u2588\u2588\u258a     | 35/72 [00:05&amp;lt;00:03,  9.45it/s, now=None]\rt:  51%|\u2588\u2588\u2588\u2588\u2588\u258f    | 37/72 [00:05&amp;lt;00:03,  9.95it/s, now=None]\rt:  54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 39/72 [00:06&amp;lt;00:05,  6.20it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258c    | 40/72 [00:06&amp;lt;00:06,  5.16it/s, now=None]\rt:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 41/72 [00:07&amp;lt;00:06,  4.47it/s, now=None]\rt:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 42/72 [00:07&amp;lt;00:07,  3.94it/s, now=None]\rt:  60%|\u2588\u2588\u2588\u2588\u2588\u2589    | 43/72 [00:07&amp;lt;00:07,  3.66it/s, now=None]\rt:  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 44/72 [00:08&amp;lt;00:08,  3.44it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 45/72 [00:08&amp;lt;00:08,  3.26it/s, now=None]\rt:  64%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 46/72 [00:08&amp;lt;00:08,  3.15it/s, now=None]\rt:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 47/72 [00:09&amp;lt;00:08,  3.06it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 48/72 [00:09&amp;lt;00:07,  3.03it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 49/72 [00:09&amp;lt;00:07,  2.99it/s, now=None]\rt:  71%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 51/72 [00:10&amp;lt;00:04,  4.72it/s, now=None]\rt:  74%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 53/72 [00:10&amp;lt;00:03,  6.20it/s, now=None]\rt:  76%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 55/72 [00:10&amp;lt;00:02,  7.21it/s, now=None]\rt:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 57/72 [00:10&amp;lt;00:01,  8.26it/s, now=None]\rt:  82%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 59/72 [00:10&amp;lt;00:01,  9.11it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 61/72 [00:10&amp;lt;00:01,  9.80it/s, now=None]\rt:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 63/72 [00:11&amp;lt;00:00,  9.97it/s, now=None]\rt:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 65/72 [00:11&amp;lt;00:00, 10.33it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 67/72 [00:11&amp;lt;00:00, 10.65it/s, now=None]\rt:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 69/72 [00:11&amp;lt;00:00, 10.54it/s, now=None]\rt:  99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 71/72 [00:11&amp;lt;00:00, 10.56it/s, now=None]\r                                                            \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpro_mezh4.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_video_with_zoom_out&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_video_with_zoom_out&#34;, &#34;duration&#34;: &#34;00:00:10&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_video_with_zoom_out&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:10&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:53:54,735 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.10\n2025-06-06 09:53:56,020 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpti1h8pb2.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpti1h8pb2.mp4.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpti1h8pb2.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpti1h8pb2.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rt:   0%|          | 0/72 [00:00&amp;lt;?, ?it/s, now=None]\rt:   3%|\u258e         | 2/72 [00:00&amp;lt;00:04, 15.35it/s, now=None]\rt:   6%|\u258c         | 4/72 [00:00&amp;lt;00:07,  9.63it/s, now=None]\rt:   8%|\u258a         | 6/72 [00:00&amp;lt;00:07,  8.37it/s, now=None]\rt:  10%|\u2589         | 7/72 [00:00&amp;lt;00:08,  7.91it/s, now=None]\rt:  11%|\u2588         | 8/72 [00:00&amp;lt;00:07,  8.03it/s, now=None]\rt:  12%|\u2588\u258e        | 9/72 [00:01&amp;lt;00:07,  8.14it/s, now=None]\rt:  14%|\u2588\u258d        | 10/72 [00:01&amp;lt;00:07,  8.11it/s, now=None]\rt:  15%|\u2588\u258c        | 11/72 [00:01&amp;lt;00:07,  8.06it/s, now=None]\rt:  17%|\u2588\u258b        | 12/72 [00:01&amp;lt;00:07,  7.91it/s, now=None]\rt:  18%|\u2588\u258a        | 13/72 [00:01&amp;lt;00:07,  7.56it/s, now=None]\rt:  19%|\u2588\u2589        | 14/72 [00:01&amp;lt;00:07,  8.12it/s, now=None]\rt:  21%|\u2588\u2588        | 15/72 [00:01&amp;lt;00:07,  7.96it/s, now=None]\rt:  22%|\u2588\u2588\u258f       | 16/72 [00:01&amp;lt;00:07,  7.90it/s, now=None]\rt:  24%|\u2588\u2588\u258e       | 17/72 [00:02&amp;lt;00:07,  7.86it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 18/72 [00:02&amp;lt;00:06,  7.93it/s, now=None]\rt:  26%|\u2588\u2588\u258b       | 19/72 [00:02&amp;lt;00:06,  7.74it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 20/72 [00:02&amp;lt;00:06,  7.53it/s, now=None]\rt:  29%|\u2588\u2588\u2589       | 21/72 [00:02&amp;lt;00:06,  7.51it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 22/72 [00:02&amp;lt;00:06,  7.38it/s, now=None]\rt:  32%|\u2588\u2588\u2588\u258f      | 23/72 [00:02&amp;lt;00:06,  7.51it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 24/72 [00:03&amp;lt;00:06,  7.65it/s, now=None]\rt:  35%|\u2588\u2588\u2588\u258d      | 25/72 [00:03&amp;lt;00:06,  7.74it/s, now=None]\rt:  36%|\u2588\u2588\u2588\u258c      | 26/72 [00:03&amp;lt;00:05,  7.87it/s, now=None]\rt:  38%|\u2588\u2588\u2588\u258a      | 27/72 [00:03&amp;lt;00:05,  7.78it/s, now=None]\rt:  39%|\u2588\u2588\u2588\u2589      | 28/72 [00:03&amp;lt;00:05,  7.82it/s, now=None]\rt:  40%|\u2588\u2588\u2588\u2588      | 29/72 [00:03&amp;lt;00:05,  7.73it/s, now=None]\rt:  42%|\u2588\u2588\u2588\u2588\u258f     | 30/72 [00:03&amp;lt;00:05,  7.49it/s, now=None]\rt:  43%|\u2588\u2588\u2588\u2588\u258e     | 31/72 [00:03&amp;lt;00:05,  7.66it/s, now=None]\rt:  44%|\u2588\u2588\u2588\u2588\u258d     | 32/72 [00:04&amp;lt;00:05,  7.44it/s, now=None]\rt:  46%|\u2588\u2588\u2588\u2588\u258c     | 33/72 [00:04&amp;lt;00:05,  7.67it/s, now=None]\rt:  47%|\u2588\u2588\u2588\u2588\u258b     | 34/72 [00:04&amp;lt;00:04,  7.65it/s, now=None]\rt:  49%|\u2588\u2588\u2588\u2588\u258a     | 35/72 [00:04&amp;lt;00:04,  7.55it/s, now=None]\rt:  50%|\u2588\u2588\u2588\u2588\u2588     | 36/72 [00:04&amp;lt;00:04,  7.56it/s, now=None]\rt:  51%|\u2588\u2588\u2588\u2588\u2588\u258f    | 37/72 [00:04&amp;lt;00:04,  7.04it/s, now=None]\rt:  54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 39/72 [00:04&amp;lt;00:04,  8.14it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258c    | 40/72 [00:05&amp;lt;00:04,  7.94it/s, now=None]\rt:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 41/72 [00:05&amp;lt;00:03,  7.92it/s, now=None]\rt:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 42/72 [00:05&amp;lt;00:03,  7.78it/s, now=None]\rt:  60%|\u2588\u2588\u2588\u2588\u2588\u2589    | 43/72 [00:05&amp;lt;00:03,  7.70it/s, now=None]\rt:  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 44/72 [00:05&amp;lt;00:03,  7.65it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 45/72 [00:05&amp;lt;00:03,  7.44it/s, now=None]\rt:  64%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 46/72 [00:05&amp;lt;00:03,  7.62it/s, now=None]\rt:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 47/72 [00:05&amp;lt;00:03,  7.73it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 48/72 [00:06&amp;lt;00:03,  7.59it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 49/72 [00:06&amp;lt;00:03,  7.42it/s, now=None]\rt:  71%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 51/72 [00:06&amp;lt;00:02,  9.17it/s, now=None]\rt:  74%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 53/72 [00:06&amp;lt;00:01, 10.20it/s, now=None]\rt:  76%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 55/72 [00:06&amp;lt;00:01, 10.81it/s, now=None]\rt:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 57/72 [00:06&amp;lt;00:01, 11.46it/s, now=None]\rt:  82%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 59/72 [00:07&amp;lt;00:01, 11.69it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 61/72 [00:07&amp;lt;00:00, 11.70it/s, now=None]\rt:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 63/72 [00:07&amp;lt;00:00, 11.75it/s, now=None]\rt:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 65/72 [00:07&amp;lt;00:00, 11.90it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 67/72 [00:07&amp;lt;00:00, 11.32it/s, now=None]\rt:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 69/72 [00:07&amp;lt;00:00, 11.65it/s, now=None]\rt:  99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 71/72 [00:08&amp;lt;00:00, 11.92it/s, now=None]\r                                                            \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.10\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpti1h8pb2.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_video_with_audio&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_video_with_audio&#34;, &#34;duration&#34;: &#34;00:00:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_video_with_audio&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:04&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:54:05,153 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\n2025-06-06 09:54:05,625 - INFO - \u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430 \u0430\u0443\u0434\u0438\u043e\u0434\u043e\u0440\u043e\u0436\u043a\u0430 \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c\u044e 5.00 \u0441\u0435\u043a\n2025-06-06 09:54:05,626 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp8qysvi5w.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp8qysvi5w.mp4.\nMoviePy - Writing audio in tmp8qysvi5wTEMP_MPY_wvf_snd.mp3\nMoviePy - Done.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp8qysvi5w.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp8qysvi5w.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rchunk:   0%|          | 0/111 [00:00&amp;lt;?, ?it/s, now=None]\r                                                        \r\rt:   0%|          | 0/120 [00:00&amp;lt;?, ?it/s, now=None]\rt:   4%|\u258d         | 5/120 [00:00&amp;lt;00:02, 49.55it/s, now=None]\rt:   8%|\u258a         | 10/120 [00:00&amp;lt;00:02, 46.80it/s, now=None]\rt:  12%|\u2588\u258e        | 15/120 [00:00&amp;lt;00:02, 46.36it/s, now=None]\rt:  17%|\u2588\u258b        | 20/120 [00:00&amp;lt;00:02, 45.05it/s, now=None]\rt:  21%|\u2588\u2588        | 25/120 [00:00&amp;lt;00:02, 43.07it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 30/120 [00:00&amp;lt;00:02, 42.82it/s, now=None]\rt:  29%|\u2588\u2588\u2589       | 35/120 [00:00&amp;lt;00:02, 42.42it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 40/120 [00:00&amp;lt;00:01, 42.37it/s, now=None]\rt:  38%|\u2588\u2588\u2588\u258a      | 45/120 [00:01&amp;lt;00:01, 40.89it/s, now=None]\rt:  42%|\u2588\u2588\u2588\u2588\u258f     | 50/120 [00:01&amp;lt;00:01, 40.38it/s, now=None]\rt:  46%|\u2588\u2588\u2588\u2588\u258c     | 55/120 [00:01&amp;lt;00:01, 39.69it/s, now=None]\rt:  49%|\u2588\u2588\u2588\u2588\u2589     | 59/120 [00:01&amp;lt;00:01, 39.72it/s, now=None]\rt:  52%|\u2588\u2588\u2588\u2588\u2588\u258e    | 63/120 [00:01&amp;lt;00:01, 39.56it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258c    | 67/120 [00:01&amp;lt;00:01, 38.91it/s, now=None]\rt:  59%|\u2588\u2588\u2588\u2588\u2588\u2589    | 71/120 [00:01&amp;lt;00:01, 38.48it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 75/120 [00:01&amp;lt;00:01, 38.36it/s, now=None]\rt:  66%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 79/120 [00:01&amp;lt;00:01, 38.30it/s, now=None]\rt:  69%|\u2588\u2588\u2588\u2588\u2588\u2588\u2589   | 83/120 [00:02&amp;lt;00:00, 38.46it/s, now=None]\rt:  72%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 87/120 [00:02&amp;lt;00:00, 38.82it/s, now=None]\rt:  77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 92/120 [00:02&amp;lt;00:00, 39.44it/s, now=None]\rt:  81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 97/120 [00:02&amp;lt;00:00, 39.77it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 102/120 [00:02&amp;lt;00:00, 39.97it/s, now=None]\rt:  89%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 107/120 [00:02&amp;lt;00:00, 40.24it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 112/120 [00:02&amp;lt;00:00, 39.13it/s, now=None]\rt:  98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 117/120 [00:02&amp;lt;00:00, 39.30it/s, now=None]\r                                                              \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:166 \u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430 \u0430\u0443\u0434\u0438\u043e\u0434\u043e\u0440\u043e\u0436\u043a\u0430 \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c\u044e 5.00 \u0441\u0435\u043a\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp8qysvi5w.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_video_duration_matches_audio&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_video_duration_matches_audio&#34;, &#34;duration&#34;: &#34;00:00:12&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_video_duration_matches_audio&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:12&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:54:09,477 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\n2025-06-06 09:54:10,410 - INFO - \u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430 \u0430\u0443\u0434\u0438\u043e\u0434\u043e\u0440\u043e\u0436\u043a\u0430 \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c\u044e 5.00 \u0441\u0435\u043a\n2025-06-06 09:54:10,410 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpjeaufnfb.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpjeaufnfb.mp4.\nMoviePy - Writing audio in tmpjeaufnfbTEMP_MPY_wvf_snd.mp3\nMoviePy - Done.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpjeaufnfb.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpjeaufnfb.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rchunk:   0%|          | 0/111 [00:00&amp;lt;?, ?it/s, now=None]\r                                                        \r\rt:   0%|          | 0/120 [00:00&amp;lt;?, ?it/s, now=None]\rt:   2%|\u258e         | 3/120 [00:00&amp;lt;00:06, 17.81it/s, now=None]\rt:   4%|\u258d         | 5/120 [00:00&amp;lt;00:07, 15.40it/s, now=None]\rt:   6%|\u258c         | 7/120 [00:00&amp;lt;00:07, 14.81it/s, now=None]\rt:   8%|\u258a         | 9/120 [00:00&amp;lt;00:07, 14.49it/s, now=None]\rt:   9%|\u2589         | 11/120 [00:00&amp;lt;00:07, 14.01it/s, now=None]\rt:  11%|\u2588         | 13/120 [00:00&amp;lt;00:07, 13.64it/s, now=None]\rt:  12%|\u2588\u258e        | 15/120 [00:01&amp;lt;00:06, 15.05it/s, now=None]\rt:  14%|\u2588\u258d        | 17/120 [00:01&amp;lt;00:07, 13.28it/s, now=None]\rt:  16%|\u2588\u258c        | 19/120 [00:01&amp;lt;00:07, 13.67it/s, now=None]\rt:  18%|\u2588\u258a        | 21/120 [00:01&amp;lt;00:07, 13.92it/s, now=None]\rt:  19%|\u2588\u2589        | 23/120 [00:01&amp;lt;00:06, 13.86it/s, now=None]\rt:  21%|\u2588\u2588        | 25/120 [00:01&amp;lt;00:06, 13.64it/s, now=None]\rt:  22%|\u2588\u2588\u258e       | 27/120 [00:01&amp;lt;00:06, 13.34it/s, now=None]\rt:  24%|\u2588\u2588\u258d       | 29/120 [00:02&amp;lt;00:06, 13.05it/s, now=None]\rt:  26%|\u2588\u2588\u258c       | 31/120 [00:02&amp;lt;00:07, 12.56it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 33/120 [00:02&amp;lt;00:06, 13.09it/s, now=None]\rt:  29%|\u2588\u2588\u2589       | 35/120 [00:02&amp;lt;00:06, 13.42it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 37/120 [00:02&amp;lt;00:06, 12.73it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 40/120 [00:02&amp;lt;00:05, 14.23it/s, now=None]\rt:  35%|\u2588\u2588\u2588\u258c      | 42/120 [00:03&amp;lt;00:05, 13.89it/s, now=None]\rt:  37%|\u2588\u2588\u2588\u258b      | 44/120 [00:03&amp;lt;00:05, 12.99it/s, now=None]\rt:  38%|\u2588\u2588\u2588\u258a      | 46/120 [00:03&amp;lt;00:05, 13.28it/s, now=None]\rt:  40%|\u2588\u2588\u2588\u2588      | 48/120 [00:03&amp;lt;00:05, 13.24it/s, now=None]\rt:  42%|\u2588\u2588\u2588\u2588\u258f     | 50/120 [00:03&amp;lt;00:05, 13.15it/s, now=None]\rt:  43%|\u2588\u2588\u2588\u2588\u258e     | 52/120 [00:03&amp;lt;00:05, 13.06it/s, now=None]\rt:  45%|\u2588\u2588\u2588\u2588\u258c     | 54/120 [00:03&amp;lt;00:05, 12.87it/s, now=None]\rt:  47%|\u2588\u2588\u2588\u2588\u258b     | 56/120 [00:04&amp;lt;00:05, 12.65it/s, now=None]\rt:  48%|\u2588\u2588\u2588\u2588\u258a     | 58/120 [00:04&amp;lt;00:04, 12.85it/s, now=None]\rt:  50%|\u2588\u2588\u2588\u2588\u2588     | 60/120 [00:04&amp;lt;00:04, 12.88it/s, now=None]\rt:  52%|\u2588\u2588\u2588\u2588\u2588\u258f    | 62/120 [00:04&amp;lt;00:04, 14.16it/s, now=None]\rt:  53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 64/120 [00:04&amp;lt;00:04, 13.20it/s, now=None]\rt:  55%|\u2588\u2588\u2588\u2588\u2588\u258c    | 66/120 [00:04&amp;lt;00:04, 13.04it/s, now=None]\rt:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 68/120 [00:05&amp;lt;00:03, 13.02it/s, now=None]\rt:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 70/120 [00:05&amp;lt;00:03, 13.19it/s, now=None]\rt:  60%|\u2588\u2588\u2588\u2588\u2588\u2588    | 72/120 [00:05&amp;lt;00:03, 12.86it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258f   | 74/120 [00:05&amp;lt;00:03, 12.99it/s, now=None]\rt:  63%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 76/120 [00:05&amp;lt;00:03, 13.00it/s, now=None]\rt:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 78/120 [00:05&amp;lt;00:03, 12.92it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 80/120 [00:05&amp;lt;00:03, 13.00it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 82/120 [00:06&amp;lt;00:03, 11.68it/s, now=None]\rt:  70%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 84/120 [00:06&amp;lt;00:03, 11.95it/s, now=None]\rt:  72%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f  | 86/120 [00:06&amp;lt;00:02, 13.01it/s, now=None]\rt:  73%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 88/120 [00:06&amp;lt;00:02, 12.85it/s, now=None]\rt:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 90/120 [00:06&amp;lt;00:02, 12.30it/s, now=None]\rt:  77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 92/120 [00:06&amp;lt;00:02, 12.46it/s, now=None]\rt:  78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a  | 94/120 [00:07&amp;lt;00:02, 12.59it/s, now=None]\rt:  80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 96/120 [00:07&amp;lt;00:01, 12.94it/s, now=None]\rt:  82%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 98/120 [00:07&amp;lt;00:01, 12.95it/s, now=None]\rt:  83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 100/120 [00:07&amp;lt;00:01, 12.58it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 102/120 [00:07&amp;lt;00:01, 12.54it/s, now=None]\rt:  87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 104/120 [00:07&amp;lt;00:01, 12.29it/s, now=None]\rt:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 106/120 [00:08&amp;lt;00:01, 11.96it/s, now=None]\rt:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 108/120 [00:08&amp;lt;00:00, 12.52it/s, now=None]\rt:  92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 110/120 [00:08&amp;lt;00:00, 13.92it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 112/120 [00:08&amp;lt;00:00, 12.87it/s, now=None]\rt:  95%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 114/120 [00:08&amp;lt;00:00, 12.64it/s, now=None]\rt:  97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 116/120 [00:08&amp;lt;00:00, 12.67it/s, now=None]\rt:  98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 118/120 [00:09&amp;lt;00:00, 12.69it/s, now=None]\rt: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 120/120 [00:09&amp;lt;00:00, 12.65it/s, now=None]\r                                                              \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:166 \u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430 \u0430\u0443\u0434\u0438\u043e\u0434\u043e\u0440\u043e\u0436\u043a\u0430 \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c\u044e 5.00 \u0441\u0435\u043a\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpjeaufnfb.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_audio_loop_exact_match&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_audio_loop_exact_match&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_audio_loop_exact_match&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:54:20,943 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\n2025-06-06 09:54:21,293 - INFO - \u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430 \u0430\u0443\u0434\u0438\u043e\u0434\u043e\u0440\u043e\u0436\u043a\u0430 \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c\u044e 3.00 \u0441\u0435\u043a\n2025-06-06 09:54:21,293 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpghxhsf0k.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpghxhsf0k.mp4.\nMoviePy - Writing audio in tmpghxhsf0kTEMP_MPY_wvf_snd.mp3\nMoviePy - Done.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpghxhsf0k.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpghxhsf0k.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rchunk:   0%|          | 0/67 [00:00&amp;lt;?, ?it/s, now=None]\r                                                       \r\rt:   0%|          | 0/72 [00:00&amp;lt;?, ?it/s, now=None]\rt:   6%|\u258c         | 4/72 [00:00&amp;lt;00:01, 37.72it/s, now=None]\rt:  12%|\u2588\u258e        | 9/72 [00:00&amp;lt;00:01, 43.00it/s, now=None]\rt:  19%|\u2588\u2589        | 14/72 [00:00&amp;lt;00:01, 43.14it/s, now=None]\rt:  26%|\u2588\u2588\u258b       | 19/72 [00:00&amp;lt;00:01, 42.77it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 24/72 [00:00&amp;lt;00:01, 44.00it/s, now=None]\rt:  40%|\u2588\u2588\u2588\u2588      | 29/72 [00:00&amp;lt;00:00, 44.37it/s, now=None]\rt:  47%|\u2588\u2588\u2588\u2588\u258b     | 34/72 [00:00&amp;lt;00:00, 43.84it/s, now=None]\rt:  54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 39/72 [00:00&amp;lt;00:00, 42.16it/s, now=None]\rt:  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 44/72 [00:01&amp;lt;00:00, 41.58it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 49/72 [00:01&amp;lt;00:00, 39.18it/s, now=None]\rt:  74%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 53/72 [00:01&amp;lt;00:00, 39.17it/s, now=None]\rt:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 57/72 [00:01&amp;lt;00:00, 39.06it/s, now=None]\rt:  86%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 62/72 [00:01&amp;lt;00:00, 39.83it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 67/72 [00:01&amp;lt;00:00, 40.07it/s, now=None]\rt: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 72/72 [00:01&amp;lt;00:00, 38.98it/s, now=None]\r                                                            \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:166 \u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430 \u0430\u0443\u0434\u0438\u043e\u0434\u043e\u0440\u043e\u0436\u043a\u0430 \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c\u044e 3.00 \u0441\u0435\u043a\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpghxhsf0k.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_video_with_overlay&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_video_with_overlay&#34;, &#34;duration&#34;: &#34;00:00:15&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_video_with_overlay&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:15&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n2025-06-06 09:54:23,591 - INFO - Overlay: \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d \u0442\u0435\u043a\u0441\u0442 &amp;#x27;Overlay&amp;#x27; \u043d\u0430 \u043f\u043e\u0437\u0438\u0446\u0438\u044e top\n2025-06-06 09:54:23,606 - INFO - Overlay: \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d \u0442\u0435\u043a\u0441\u0442 &amp;#x27;Overlay&amp;#x27; \u043d\u0430 \u043f\u043e\u0437\u0438\u0446\u0438\u044e top\n2025-06-06 09:54:23,622 - INFO - Overlay: \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d \u0442\u0435\u043a\u0441\u0442 &amp;#x27;Overlay&amp;#x27; \u043d\u0430 \u043f\u043e\u0437\u0438\u0446\u0438\u044e top\n\n------------------------------ Captured log setup ------------------------------\nINFO     image_processor:image_processor.py:136 Overlay: \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d \u0442\u0435\u043a\u0441\u0442 &amp;#x27;Overlay&amp;#x27; \u043d\u0430 \u043f\u043e\u0437\u0438\u0446\u0438\u044e top\nINFO     image_processor:image_processor.py:136 Overlay: \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d \u0442\u0435\u043a\u0441\u0442 &amp;#x27;Overlay&amp;#x27; \u043d\u0430 \u043f\u043e\u0437\u0438\u0446\u0438\u044e top\nINFO     image_processor:image_processor.py:136 Overlay: \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d \u0442\u0435\u043a\u0441\u0442 &amp;#x27;Overlay&amp;#x27; \u043d\u0430 \u043f\u043e\u0437\u0438\u0446\u0438\u044e top\n\n----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:54:23,628 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.50, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\n2025-06-06 09:54:24,410 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp0z87zz9n.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp0z87zz9n.mp4.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp0z87zz9n.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp0z87zz9n.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rt:   0%|          | 0/108 [00:00&amp;lt;?, ?it/s, now=None]\rt:   2%|\u258f         | 2/108 [00:00&amp;lt;00:06, 17.36it/s, now=None]\rt:   4%|\u258e         | 4/108 [00:00&amp;lt;00:12,  8.39it/s, now=None]\rt:   6%|\u258c         | 6/108 [00:00&amp;lt;00:13,  7.56it/s, now=None]\rt:   6%|\u258b         | 7/108 [00:00&amp;lt;00:13,  7.26it/s, now=None]\rt:   7%|\u258b         | 8/108 [00:01&amp;lt;00:13,  7.15it/s, now=None]\rt:   8%|\u258a         | 9/108 [00:01&amp;lt;00:14,  6.87it/s, now=None]\rt:   9%|\u2589         | 10/108 [00:01&amp;lt;00:14,  6.74it/s, now=None]\rt:  10%|\u2588         | 11/108 [00:01&amp;lt;00:14,  6.78it/s, now=None]\rt:  11%|\u2588         | 12/108 [00:01&amp;lt;00:14,  6.66it/s, now=None]\rt:  12%|\u2588\u258f        | 13/108 [00:01&amp;lt;00:14,  6.75it/s, now=None]\rt:  14%|\u2588\u258d        | 15/108 [00:02&amp;lt;00:11,  7.76it/s, now=None]\rt:  15%|\u2588\u258d        | 16/108 [00:02&amp;lt;00:11,  8.12it/s, now=None]\rt:  16%|\u2588\u258c        | 17/108 [00:02&amp;lt;00:10,  8.39it/s, now=None]\rt:  17%|\u2588\u258b        | 18/108 [00:02&amp;lt;00:10,  8.53it/s, now=None]\rt:  18%|\u2588\u258a        | 19/108 [00:02&amp;lt;00:10,  8.88it/s, now=None]\rt:  19%|\u2588\u258a        | 20/108 [00:02&amp;lt;00:09,  9.16it/s, now=None]\rt:  20%|\u2588\u2588        | 22/108 [00:02&amp;lt;00:08,  9.70it/s, now=None]\rt:  21%|\u2588\u2588\u258f       | 23/108 [00:02&amp;lt;00:08,  9.63it/s, now=None]\rt:  23%|\u2588\u2588\u258e       | 25/108 [00:03&amp;lt;00:08,  9.31it/s, now=None]\rt:  24%|\u2588\u2588\u258d       | 26/108 [00:03&amp;lt;00:08,  9.34it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 27/108 [00:03&amp;lt;00:10,  8.01it/s, now=None]\rt:  26%|\u2588\u2588\u258c       | 28/108 [00:03&amp;lt;00:10,  7.48it/s, now=None]\rt:  27%|\u2588\u2588\u258b       | 29/108 [00:03&amp;lt;00:10,  7.21it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 30/108 [00:03&amp;lt;00:11,  6.97it/s, now=None]\rt:  29%|\u2588\u2588\u258a       | 31/108 [00:03&amp;lt;00:11,  6.76it/s, now=None]\rt:  30%|\u2588\u2588\u2589       | 32/108 [00:04&amp;lt;00:11,  6.35it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 33/108 [00:04&amp;lt;00:12,  6.20it/s, now=None]\rt:  31%|\u2588\u2588\u2588\u258f      | 34/108 [00:04&amp;lt;00:11,  6.33it/s, now=None]\rt:  32%|\u2588\u2588\u2588\u258f      | 35/108 [00:04&amp;lt;00:11,  6.49it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 36/108 [00:04&amp;lt;00:10,  6.57it/s, now=None]\rt:  34%|\u2588\u2588\u2588\u258d      | 37/108 [00:04&amp;lt;00:10,  6.48it/s, now=None]\rt:  35%|\u2588\u2588\u2588\u258c      | 38/108 [00:05&amp;lt;00:09,  7.08it/s, now=None]\rt:  36%|\u2588\u2588\u2588\u258c      | 39/108 [00:05&amp;lt;00:09,  6.93it/s, now=None]\rt:  37%|\u2588\u2588\u2588\u258b      | 40/108 [00:05&amp;lt;00:10,  6.77it/s, now=None]\rt:  38%|\u2588\u2588\u2588\u258a      | 41/108 [00:05&amp;lt;00:09,  6.77it/s, now=None]\rt:  39%|\u2588\u2588\u2588\u2589      | 42/108 [00:05&amp;lt;00:09,  6.86it/s, now=None]\rt:  40%|\u2588\u2588\u2588\u2589      | 43/108 [00:05&amp;lt;00:09,  6.74it/s, now=None]\rt:  41%|\u2588\u2588\u2588\u2588      | 44/108 [00:05&amp;lt;00:09,  6.66it/s, now=None]\rt:  42%|\u2588\u2588\u2588\u2588\u258f     | 45/108 [00:06&amp;lt;00:09,  6.55it/s, now=None]\rt:  43%|\u2588\u2588\u2588\u2588\u258e     | 46/108 [00:06&amp;lt;00:09,  6.45it/s, now=None]\rt:  44%|\u2588\u2588\u2588\u2588\u258e     | 47/108 [00:06&amp;lt;00:09,  6.52it/s, now=None]\rt:  44%|\u2588\u2588\u2588\u2588\u258d     | 48/108 [00:06&amp;lt;00:09,  6.46it/s, now=None]\rt:  45%|\u2588\u2588\u2588\u2588\u258c     | 49/108 [00:06&amp;lt;00:09,  6.53it/s, now=None]\rt:  46%|\u2588\u2588\u2588\u2588\u258b     | 50/108 [00:06&amp;lt;00:08,  7.21it/s, now=None]\rt:  47%|\u2588\u2588\u2588\u2588\u258b     | 51/108 [00:06&amp;lt;00:07,  7.73it/s, now=None]\rt:  48%|\u2588\u2588\u2588\u2588\u258a     | 52/108 [00:07&amp;lt;00:06,  8.20it/s, now=None]\rt:  49%|\u2588\u2588\u2588\u2588\u2589     | 53/108 [00:07&amp;lt;00:06,  8.27it/s, now=None]\rt:  50%|\u2588\u2588\u2588\u2588\u2588     | 54/108 [00:07&amp;lt;00:06,  8.51it/s, now=None]\rt:  51%|\u2588\u2588\u2588\u2588\u2588     | 55/108 [00:07&amp;lt;00:05,  8.87it/s, now=None]\rt:  52%|\u2588\u2588\u2588\u2588\u2588\u258f    | 56/108 [00:07&amp;lt;00:05,  9.13it/s, now=None]\rt:  54%|\u2588\u2588\u2588\u2588\u2588\u258e    | 58/108 [00:07&amp;lt;00:05,  9.50it/s, now=None]\rt:  55%|\u2588\u2588\u2588\u2588\u2588\u258d    | 59/108 [00:07&amp;lt;00:05,  9.51it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258c    | 60/108 [00:07&amp;lt;00:05,  9.25it/s, now=None]\rt:  56%|\u2588\u2588\u2588\u2588\u2588\u258b    | 61/108 [00:07&amp;lt;00:05,  9.28it/s, now=None]\rt:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 62/108 [00:08&amp;lt;00:04,  9.36it/s, now=None]\rt:  58%|\u2588\u2588\u2588\u2588\u2588\u258a    | 63/108 [00:08&amp;lt;00:05,  7.74it/s, now=None]\rt:  59%|\u2588\u2588\u2588\u2588\u2588\u2589    | 64/108 [00:08&amp;lt;00:05,  7.37it/s, now=None]\rt:  60%|\u2588\u2588\u2588\u2588\u2588\u2588    | 65/108 [00:08&amp;lt;00:06,  7.04it/s, now=None]\rt:  61%|\u2588\u2588\u2588\u2588\u2588\u2588    | 66/108 [00:08&amp;lt;00:06,  6.79it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258f   | 67/108 [00:08&amp;lt;00:06,  6.63it/s, now=None]\rt:  63%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 68/108 [00:09&amp;lt;00:06,  6.48it/s, now=None]\rt:  64%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 69/108 [00:09&amp;lt;00:06,  6.31it/s, now=None]\rt:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258d   | 70/108 [00:09&amp;lt;00:05,  6.48it/s, now=None]\rt:  66%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 71/108 [00:09&amp;lt;00:05,  6.40it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 72/108 [00:09&amp;lt;00:05,  6.30it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 73/108 [00:09&amp;lt;00:05,  6.30it/s, now=None]\rt:  69%|\u2588\u2588\u2588\u2588\u2588\u2588\u2589   | 75/108 [00:10&amp;lt;00:04,  8.04it/s, now=None]\rt:  70%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 76/108 [00:10&amp;lt;00:03,  8.31it/s, now=None]\rt:  71%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f  | 77/108 [00:10&amp;lt;00:03,  8.64it/s, now=None]\rt:  73%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 79/108 [00:10&amp;lt;00:03,  9.39it/s, now=None]\rt:  75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 81/108 [00:10&amp;lt;00:02,  9.61it/s, now=None]\rt:  76%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 82/108 [00:10&amp;lt;00:02,  9.64it/s, now=None]\rt:  77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 83/108 [00:10&amp;lt;00:02,  9.55it/s, now=None]\rt:  78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a  | 84/108 [00:10&amp;lt;00:02,  9.63it/s, now=None]\rt:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a  | 85/108 [00:11&amp;lt;00:02,  9.68it/s, now=None]\rt:  80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 86/108 [00:11&amp;lt;00:02,  9.50it/s, now=None]\rt:  81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 87/108 [00:11&amp;lt;00:02,  9.15it/s, now=None]\rt:  81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 88/108 [00:11&amp;lt;00:02,  9.20it/s, now=None]\rt:  82%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 89/108 [00:11&amp;lt;00:02,  9.20it/s, now=None]\rt:  83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 90/108 [00:11&amp;lt;00:01,  9.18it/s, now=None]\rt:  84%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 91/108 [00:11&amp;lt;00:01,  9.22it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 92/108 [00:11&amp;lt;00:01,  9.15it/s, now=None]\rt:  86%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 93/108 [00:11&amp;lt;00:01,  9.25it/s, now=None]\rt:  87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 94/108 [00:12&amp;lt;00:01,  9.31it/s, now=None]\rt:  88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 95/108 [00:12&amp;lt;00:01,  9.40it/s, now=None]\rt:  89%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 96/108 [00:12&amp;lt;00:01,  9.34it/s, now=None]\rt:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 97/108 [00:12&amp;lt;00:01,  8.52it/s, now=None]\rt:  92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 99/108 [00:12&amp;lt;00:01,  8.98it/s, now=None]\rt:  93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 100/108 [00:12&amp;lt;00:00,  9.09it/s, now=None]\rt:  94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 101/108 [00:12&amp;lt;00:00,  9.17it/s, now=None]\rt:  94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 102/108 [00:12&amp;lt;00:00,  9.15it/s, now=None]\rt:  95%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 103/108 [00:13&amp;lt;00:00,  9.22it/s, now=None]\rt:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 104/108 [00:13&amp;lt;00:00,  9.36it/s, now=None]\rt:  97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 105/108 [00:13&amp;lt;00:00,  9.09it/s, now=None]\rt:  99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 107/108 [00:13&amp;lt;00:00,  9.42it/s, now=None]\rt: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 108/108 [00:13&amp;lt;00:00,  9.55it/s, now=None]\r                                                              \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.50, transition_duration=0.50, zoom_factor=0.10, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmp0z87zz9n.mp4\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_create_video_with_empty_images_list&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_create_video_with_empty_images_list&#34;, &#34;duration&#34;: &#34;12 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_create_video_with_empty_images_list&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;12 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:54:38,552 - ERROR - \u0421\u043f\u0438\u0441\u043e\u043a \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u043f\u0443\u0441\u0442.\n\n------------------------------ Captured log call -------------------------------\nERROR    video_maker:video_maker.py:84 \u0421\u043f\u0438\u0441\u043e\u043a \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439 \u043f\u0443\u0441\u0442.\n\n&#34;}], &#34;tests/pytest_video_maker.py::test_create_video_with_push_transition&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/pytest_video_maker.py::test_create_video_with_push_transition&#34;, &#34;duration&#34;: &#34;00:00:08&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/pytest_video_maker.py::test_create_video_with_push_transition&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:08&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\n2025-06-06 09:54:38,580 - INFO - \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\n2025-06-06 09:54:39,021 - INFO - \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpklqgunf7.mp4\nMoviepy - Building video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpklqgunf7.mp4.\nMoviepy - Writing video C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpklqgunf7.mp4\n\nMoviepy - Done !\nMoviepy - video ready C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpklqgunf7.mp4\n\n----------------------------- Captured stderr call -----------------------------\n\rt:   0%|          | 0/72 [00:00&amp;lt;?, ?it/s, now=None]\rt:   7%|\u258b         | 5/72 [00:00&amp;lt;00:01, 45.30it/s, now=None]\rt:  14%|\u2588\u258d        | 10/72 [00:00&amp;lt;00:01, 46.48it/s, now=None]\rt:  21%|\u2588\u2588        | 15/72 [00:00&amp;lt;00:03, 17.08it/s, now=None]\rt:  25%|\u2588\u2588\u258c       | 18/72 [00:01&amp;lt;00:05,  9.65it/s, now=None]\rt:  28%|\u2588\u2588\u258a       | 20/72 [00:01&amp;lt;00:06,  7.43it/s, now=None]\rt:  31%|\u2588\u2588\u2588       | 22/72 [00:02&amp;lt;00:07,  6.51it/s, now=None]\rt:  33%|\u2588\u2588\u2588\u258e      | 24/72 [00:02&amp;lt;00:08,  5.76it/s, now=None]\rt:  35%|\u2588\u2588\u2588\u258d      | 25/72 [00:03&amp;lt;00:08,  5.53it/s, now=None]\rt:  42%|\u2588\u2588\u2588\u2588\u258f     | 30/72 [00:03&amp;lt;00:04, 10.02it/s, now=None]\rt:  49%|\u2588\u2588\u2588\u2588\u258a     | 35/72 [00:03&amp;lt;00:02, 14.84it/s, now=None]\rt:  53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 38/72 [00:03&amp;lt;00:02, 13.92it/s, now=None]\rt:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 41/72 [00:04&amp;lt;00:03,  8.63it/s, now=None]\rt:  60%|\u2588\u2588\u2588\u2588\u2588\u2589    | 43/72 [00:04&amp;lt;00:03,  7.27it/s, now=None]\rt:  62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 45/72 [00:05&amp;lt;00:04,  6.28it/s, now=None]\rt:  65%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c   | 47/72 [00:05&amp;lt;00:04,  5.74it/s, now=None]\rt:  67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 48/72 [00:05&amp;lt;00:04,  5.38it/s, now=None]\rt:  68%|\u2588\u2588\u2588\u2588\u2588\u2588\u258a   | 49/72 [00:06&amp;lt;00:04,  5.13it/s, now=None]\rt:  74%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 53/72 [00:06&amp;lt;00:02,  9.05it/s, now=None]\rt:  79%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589  | 57/72 [00:06&amp;lt;00:01, 13.35it/s, now=None]\rt:  85%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 61/72 [00:06&amp;lt;00:00, 17.67it/s, now=None]\rt:  90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 65/72 [00:06&amp;lt;00:00, 21.76it/s, now=None]\rt:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 69/72 [00:06&amp;lt;00:00, 25.50it/s, now=None]\r                                                            \r\n------------------------------ Captured log call -------------------------------\nINFO     video_maker:video_maker.py:77 \u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b: fps=24, duration=1.00, transition_duration=0.50, zoom_factor=0.00, zoom_out_factor=0.00\nINFO     video_maker:video_maker.py:174 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e: C:\\Users\\73B5~1\\AppData\\Local\\Temp\\tmpklqgunf7.mp4\n\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;report.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > td')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > td')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+</html>
