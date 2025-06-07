@@ -1,6 +1,7 @@
 # runner.py
 import time
 import logging
+import os
 from moviepy.editor import AudioFileClip
 from image_processor import load_and_process_images, generate_overlay
 from audio_processor import load_audio_clip
@@ -13,6 +14,32 @@ def run_vvm(args):
 
     start_time = time.time()  # Засекаем время начала выполнения
     logger.info("Аргументы запуска: %s", vars(args))  # Лог всех параметров
+
+    # === ОБРАБОТКА ПУТИ ВЫВОДА ===
+    output_path = args.output
+    valid_exts = [".mp4", ".avi", ".mov", ".mkv"]
+    base, ext = os.path.splitext(output_path)
+    ext = ext.lower()
+
+    # Если указано недопустимое расширение — заменить на .mp4
+    if ext and ext not in valid_exts:
+        logger.warning("Недопустимое расширение '%s'. Будет автоматически заменено на '.mp4'", ext)
+        output_path = base + ".mp4"
+
+    # Если путь — это директория или без расширения
+    if not os.path.splitext(output_path)[1]:
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+            logger.info("Создана директория для вывода: %s", output_path)
+        output_path = os.path.join(output_path, "output.mp4")
+        logger.info("Имя выходного файла не указано. Используется по умолчанию: %s", output_path)
+    else:
+        output_dir = os.path.dirname(output_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            logger.info("Создана директория для вывода: %s", output_dir)
+
+    args.output = output_path
 
     # === ОБРАБОТКА ИЗОБРАЖЕНИЙ ===
     logger.info("Загрузка изображений из каталога: %s", args.images)
@@ -63,8 +90,16 @@ def run_vvm(args):
 
             idx = max(0, min(idx, len(images) - 1))  # Корректировка индекса
             cover_image = images[idx]
-            cover_image.save("thumbnail.png")
-            logger.info("Обложка успешно сохранена: thumbnail.png (кадр #%d)", idx)
+
+            # Определение пути для сохранения обложки
+            if args.output:
+                thumb_dir = os.path.dirname(args.output)
+                thumb_path = os.path.join(thumb_dir, "thumbnail.png") if thumb_dir else "thumbnail.png"
+            else:
+                thumb_path = "thumbnail.png"
+
+            cover_image.save(thumb_path)
+            logger.info("Обложка успешно сохранена: %s (кадр #%d)", thumb_path, idx)
         except Exception as e:
             logger.warning("Ошибка при генерации обложки: %s", e)
 
