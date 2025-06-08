@@ -17,20 +17,20 @@
 
 ### ✅ Ubuntu (GitHub Actions)
 
-* Все **51 тест** пройден
+* Все **58 тест** пройден
 * Покрытие кода: **97%**
-* Артефакт: [HTML Coverage Report Ubuntu-latest (GitHub Actions)](https://github.com/and67rey/Vertical_Video_Maker/actions/runs/15492806508/artifacts/3276449077)
+* Артефакт: [HTML Coverage Report Ubuntu-latest (GitHub Actions)](https://github.com/and67rey/Vertical_Video_Maker/actions/runs/15516616364/artifacts/3283166311)
 
 ### ✅ macOS (GitHub Actions)
 
-* Все **51 тест** пройден
+* Все **58 тест** пройден
 * Покрытие кода: **97%**
-* Артефакт: [HTML Coverage Report Macos-latest (GitHub Actions)](https://github.com/and67rey/Vertical_Video_Maker/actions/runs/15492806508/artifacts/3276446441)
+* Артефакт: [HTML Coverage Report Macos-latest (GitHub Actions)](https://github.com/and67rey/Vertical_Video_Maker/actions/runs/15516616364/artifacts/3283165386)
 
 ### ✅ Windows (PyCharm локально)
 
 * Тесты запущены в среде PyCharm (Python 3.10.1)
-* Все **51 тест** пройден
+* Все **58 тест** пройден
 * Покрытие кода: **97%**
 * Локально просмотрен автономный отчёт `report.html` 
 
