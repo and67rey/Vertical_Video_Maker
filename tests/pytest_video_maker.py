@@ -6,6 +6,7 @@ from video_maker import create_video_from_images
 from image_processor import generate_overlay
 from pydub.generators import Sine
 from moviepy.editor import AudioFileClip, VideoFileClip, AudioClip
+from moviepy.audio.AudioClip import AudioClip
 
 
 @pytest.fixture
@@ -210,3 +211,54 @@ def test_create_video_with_push_transition(temp_images):
     assert os.path.exists(output_path)
     assert os.path.getsize(output_path) > 0
     os.remove(output_path)
+
+
+def test_audio_loop_exact_match_branch(temp_images):
+    from moviepy.audio.AudioClip import AudioClip
+
+    # 3 изображения по 1с = 3с
+    audio_clip = AudioClip(lambda t: [0], duration=3.0)
+    audio_clip.fps = 44100
+
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+        output_path = tmp.name
+
+    create_video_from_images(
+        images=temp_images,
+        duration=1.0,
+        fps=24,
+        output_path=output_path,
+        transition="none",
+        transition_duration=0.5,
+        bitrate="1000k",
+        crf=None,
+        audio_clip=audio_clip,
+        zoom_factor=0.0,
+        zoom_out_factor=0.0
+    )
+
+    assert os.path.exists(output_path)
+    os.remove(output_path)
+
+def test_video_export_with_crf(temp_images):
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+        output_path = tmp.name
+
+    create_video_from_images(
+        images=temp_images,
+        duration=1.0,
+        fps=24,
+        output_path=output_path,
+        transition="none",
+        transition_duration=0.5,
+        bitrate="500k",  # должен быть проигнорирован
+        crf=23,
+        audio_clip=None,
+        zoom_factor=0.0,
+        zoom_out_factor=0.0
+    )
+
+    assert os.path.exists(output_path)
+    assert os.path.getsize(output_path) > 0
+    os.remove(output_path)
+

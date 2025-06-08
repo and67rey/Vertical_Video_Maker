@@ -1,4 +1,5 @@
 import pytest
+import os
 from unittest.mock import MagicMock, patch
 from types import SimpleNamespace
 from runner import run_vvm
@@ -161,3 +162,59 @@ def test_run_vvm_autocover_no_images(mock_create_video, mock_load_images, minima
 
     assert "Не удалось загрузить изображения" in caplog.text
     assert not mock_create_video.called  # видео не создаётся, если нет изображений
+
+
+@patch("runner.load_and_process_images", return_value=[MagicMock(save=MagicMock())])
+@patch("runner.create_video_from_images")
+def test_invalid_output_extension_replaced(mock_create_video, mock_load_images, minimal_args):
+    minimal_args.output = "video.invalid"
+    run_vvm(minimal_args)
+    assert minimal_args.output.endswith(".mp4")
+    mock_create_video.assert_called_once()
+
+
+@patch("runner.load_and_process_images", return_value=[MagicMock(save=MagicMock())])
+@patch("runner.create_video_from_images")
+def test_output_as_directory(mock_create_video, mock_load_images, tmp_path, minimal_args):
+    dir_path = tmp_path / "new_output"
+    minimal_args.output = str(dir_path)
+    run_vvm(minimal_args)
+    assert os.path.exists(dir_path)
+    assert minimal_args.output.endswith("output.mp4")
+    mock_create_video.assert_called_once()
+
+
+@patch("runner.load_and_process_images", return_value=[MagicMock(save=MagicMock())])
+@patch("runner.create_video_from_images")
+def test_create_output_directory(mock_create_video, mock_load_images, tmp_path, minimal_args):
+    output_file = tmp_path / "new_dir" / "video.mp4"
+    minimal_args.output = str(output_file)
+    run_vvm(minimal_args)
+    assert os.path.exists(output_file.parent)
+    mock_create_video.assert_called_once()
+
+
+@patch("runner.load_and_process_images")
+@patch("runner.create_video_from_images")
+def test_autocover_custom_output(mock_create_video, mock_load_images, tmp_path, minimal_args):
+    minimal_args.autocover = True
+    img_mock = MagicMock()
+    img_mock.save = MagicMock()
+    mock_dir = tmp_path / "out"
+    mock_dir.mkdir()
+    minimal_args.output = str(mock_dir / "custom.mp4")
+    mock_load_images.return_value = [img_mock]
+    run_vvm(minimal_args)
+    img_mock.save.assert_called_once_with(os.path.join(str(mock_dir), "thumbnail.png"))
+
+
+@patch("runner.load_and_process_images")
+@patch("runner.create_video_from_images")
+def test_autocover_zero_second(mock_create_video, mock_load_images, minimal_args):
+    minimal_args.autocover = "0"
+    minimal_args.duration = 2.0
+    img_mock = MagicMock()
+    img_mock.save = MagicMock()
+    mock_load_images.return_value = [img_mock] * 5
+    run_vvm(minimal_args)
+    img_mock.save.assert_called_once()
